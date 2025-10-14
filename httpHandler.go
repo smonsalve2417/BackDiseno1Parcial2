@@ -341,3 +341,26 @@ func (h *handler) HandleUserRegisters(w http.ResponseWriter, r *http.Request) {
 	WriteJSON(w, http.StatusOK, UserCarRegisters)
 
 }
+
+func (h *handler) HandleUserRegistersTotal(w http.ResponseWriter, r *http.Request) {
+	userID, err := GetUserIDFromContext(r.Context())
+	if err != nil {
+		log.Printf("Unauthorized access: %v", err)
+		WriteError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	total, err := h.store.GetCarRegistersTotalBalanceByOwner(userID)
+	if err != nil {
+		log.Printf("Error getting active car registers: %v", err)
+		WriteError(w, http.StatusInternalServerError, "error getting active car registers: "+err.Error())
+		return
+	}
+
+	TotalBalance := TotalBalance{
+		Total: total,
+	}
+
+	WriteJSON(w, http.StatusOK, TotalBalance)
+
+}

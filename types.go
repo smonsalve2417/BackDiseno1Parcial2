@@ -19,7 +19,7 @@ type User struct {
 type Car struct {
 	ID    primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
 	Owner primitive.ObjectID `json:"owner" bson:"owner"`
-	Placa string             `json:"placa" validate:"required,placa"`
+	Placa string             `json:"placa" validate:"required"`
 	Marca string             `json:"marca" validate:"required"`
 	Color string             `json:"color" validate:"required"`
 }
@@ -36,14 +36,18 @@ type LoginUserPayload struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type AccessToken struct {
+	AccessToken string `json:"accessToken" bson:"accessToken"`
+}
+
 type NewCarPayload struct {
-	Placa string `json:"placa" validate:"required,placa"`
+	Placa string `json:"placa" validate:"required"`
 	Marca string `json:"marca" validate:"required"`
 	Color string `json:"color" validate:"required"`
 }
 
 type NewCarEntryPayload struct {
-	Placa string `json:"placa" validate:"required,placa"`
+	Placa string `json:"placa" validate:"required"`
 }
 
 type CarRegister struct {
@@ -68,4 +72,8 @@ type CarEntry struct {
 type UserCarRegisters struct {
 	Registers []CarRegister `json:"registers" bson:"registers"`
 	Total     float64       `json:"total" bson:"total"`
+}
+
+type TotalBalance struct {
+	Total float64 `json:"total" bson:"total"`
 }

@@ -329,8 +329,40 @@ func (s *store) GetCarRegistersByOwner(userID primitive.ObjectID) ([]CarRegister
 	// Calcular el total de Amount
 	var total float64
 	for _, r := range registers {
-		total += r.Amount
+		if !r.Paid {
+			total += r.Amount
+		}
 	}
 
 	return registers, total, nil
+}
+
+func (s *store) GetCarRegistersTotalBalanceByOwner(userID primitive.ObjectID) (float64, error) {
+	collection := s.database.Collection("car_registers")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Filtro por propietario del carro
+	filter := bson.M{
+		"car.owner": userID,
+	}
+
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return 0, fmt.Errorf("error buscando registros: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var registers []CarRegister
+	if err := cursor.All(ctx, &registers); err != nil {
+		return 0, fmt.Errorf("error decodificando registros: %v", err)
+	}
+
+	// Calcular el total de Amount
+	var total float64
+	for _, r := range registers {
+		total += r.Amount
+	}
+
+	return total, nil
 }
