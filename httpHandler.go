@@ -27,7 +27,10 @@ func (h *handler) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /new/car/entry", WithJWTAuth(h.HandleNewCarEntry, h.store.database))
 	mux.HandleFunc("POST /new/car/exit", WithJWTAuth(h.HandleNewCarExit, h.store.database))
 
+	mux.HandleFunc("GET /view/user", WithJWTAuth(h.HandleGetUser, h.store.database))
+
 	mux.HandleFunc("GET /view/car/ActiveRegisters", WithJWTAuth(h.HandleActiveRegisters, h.store.database))
+	mux.HandleFunc("GET /view/user/isAdmin", WithJWTAuth(h.HandleIsAdmin, h.store.database))
 	mux.HandleFunc("GET /view/car/UserRegisters", WithJWTAuth(h.HandleUserRegisters, h.store.database))
 }
 
@@ -289,6 +292,54 @@ func (h *handler) HandleNewCarExit(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (h *handler) HandleGetUser(w http.ResponseWriter, r *http.Request) {
+	userID, err := GetUserIDFromContext(r.Context())
+	if err != nil {
+		log.Printf("Unauthorized access: %v", err)
+		WriteError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	FirstName, LastName, Email, err := h.store.GetUserBasicInfo(userID)
+	if err != nil {
+		log.Printf("Error getting active car registers: %v", err)
+		WriteError(w, http.StatusInternalServerError, "error getting active car registers: "+err.Error())
+		return
+	}
+
+	response := PublicUser{
+		FirstName: FirstName,
+		LastName:  LastName,
+		Email:     Email,
+	}
+
+	WriteJSON(w, http.StatusOK, response)
+
+}
+
+func (h *handler) HandleIsAdmin(w http.ResponseWriter, r *http.Request) {
+	userID, err := GetUserIDFromContext(r.Context())
+	if err != nil {
+		log.Printf("Unauthorized access: %v", err)
+		WriteError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	User, err := h.store.GetUserByObjectID(userID)
+	if err != nil {
+		log.Printf("Error getting user by ID: %v", err)
+		WriteError(w, http.StatusNotFound, "user not found: "+err.Error())
+		return
+	}
+
+	response := IsAdmin{
+		Admin: User.Admin,
+	}
+
+	WriteJSON(w, http.StatusOK, response)
+
+}
+
 func (h *handler) HandleActiveRegisters(w http.ResponseWriter, r *http.Request) {
 	userID, err := GetUserIDFromContext(r.Context())
 	if err != nil {
@@ -339,6 +390,25 @@ func (h *handler) HandleUserRegisters(w http.ResponseWriter, r *http.Request) {
 		Total:     total,
 	}
 	WriteJSON(w, http.StatusOK, UserCarRegisters)
+
+}
+
+func (h *handler) HandleUserCars(w http.ResponseWriter, r *http.Request) {
+	userID, err := GetUserIDFromContext(r.Context())
+	if err != nil {
+		log.Printf("Unauthorized access: %v", err)
+		WriteError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+		return
+	}
+
+	cars, err := h.store.GetCarsByOwner(userID)
+	if err != nil {
+		log.Printf("Error getting active car registers: %v", err)
+		WriteError(w, http.StatusInternalServerError, "error getting active car registers: "+err.Error())
+		return
+	}
+
+	WriteJSON(w, http.StatusOK, cars)
 
 }
 

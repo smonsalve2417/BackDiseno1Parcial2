@@ -337,6 +337,60 @@ func (s *store) GetCarRegistersByOwner(userID primitive.ObjectID) ([]CarRegister
 	return registers, total, nil
 }
 
+func (s *store) GetCarsByOwner(userID primitive.ObjectID) ([]Car, error) {
+	collection := s.database.Collection("cars")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"owner": userID,
+	}
+
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("error buscando autos: %v", err)
+	}
+	defer cursor.Close(ctx)
+
+	var cars []Car
+	if err := cursor.All(ctx, &cars); err != nil {
+		return nil, fmt.Errorf("error decodificando autos: %v", err)
+	}
+
+	return cars, nil
+}
+
+func (s *store) GetUserBasicInfo(userID primitive.ObjectID) (string, string, string, error) {
+	collection := s.database.Collection("user")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	// Solo traemos los campos necesarios
+	projection := bson.M{
+		"firstName": 1,
+		"lastName":  1,
+		"email":     1,
+	}
+
+	filter := bson.M{"_id": userID}
+
+	var result struct {
+		FirstName string `bson:"firstName"`
+		LastName  string `bson:"lastName"`
+		Email     string `bson:"email"`
+	}
+
+	err := collection.FindOne(ctx, filter, options.FindOne().SetProjection(projection)).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return "", "", "", fmt.Errorf("usuario no encontrado")
+		}
+		return "", "", "", fmt.Errorf("error buscando usuario: %v", err)
+	}
+
+	return result.FirstName, result.LastName, result.Email, nil
+}
+
 func (s *store) GetCarRegistersTotalBalanceByOwner(userID primitive.ObjectID) (float64, error) {
 	collection := s.database.Collection("car_registers")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

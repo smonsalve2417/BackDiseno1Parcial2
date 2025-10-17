@@ -77,3 +77,13 @@ type UserCarRegisters struct {
 type TotalBalance struct {
 	Total float64 `json:"total" bson:"total"`
 }
+
+type IsAdmin struct {
+	Admin bool `json:"isAdmin" bson:"isAdmin"`
+}
+
+type PublicUser struct {
+	FirstName string             `json:"firstName" bson:"firstName"`
+	LastName  string             `json:"lastName" bson:"lastName"`
+	Email     string             `json:"email"`
+}
