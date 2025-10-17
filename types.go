@@ -36,6 +36,10 @@ type LoginUserPayload struct {
 	Password string `json:"password" validate:"required"`
 }
 
+type GetUserPayload struct {
+	UserID string `json:"userID" validate:"userID,required"`
+}
+
 type AccessToken struct {
 	AccessToken string `json:"accessToken" bson:"accessToken"`
 }

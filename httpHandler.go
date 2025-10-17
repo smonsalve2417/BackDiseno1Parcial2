@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-playground/validator"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type handler struct {
@@ -27,7 +28,7 @@ func (h *handler) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /new/car/entry", WithJWTAuth(h.HandleNewCarEntry, h.store.database))
 	mux.HandleFunc("POST /new/car/exit", WithJWTAuth(h.HandleNewCarExit, h.store.database))
 
-	mux.HandleFunc("GET /view/user", WithJWTAuth(h.HandleGetUser, h.store.database))
+	mux.HandleFunc("POST /view/user", WithJWTAuth(h.HandleGetUser, h.store.database))
 
 	mux.HandleFunc("GET /view/car/ActiveRegisters", WithJWTAuth(h.HandleActiveRegisters, h.store.database))
 	mux.HandleFunc("GET /view/user/isAdmin", WithJWTAuth(h.HandleIsAdmin, h.store.database))
@@ -301,14 +302,29 @@ func (h *handler) HandleNewCarExit(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *handler) HandleGetUser(w http.ResponseWriter, r *http.Request) {
-	userID, err := GetUserIDFromContext(r.Context())
-	if err != nil {
-		log.Printf("Unauthorized access: %v", err)
-		WriteError(w, http.StatusUnauthorized, "unauthorized: "+err.Error())
+
+	var payload GetUserPayload
+
+	if err := ParseJSON(r, &payload); err != nil {
+		log.Printf("Error parsing JSON: %v", err)
+		WriteError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	if err := Validate.Struct(payload); err != nil {
+		errors := err.(validator.ValidationErrors)
+		formattedErrors := FormatValidationErrors(errors)
+		WriteError(w, http.StatusBadRequest, "invalid payload: "+formattedErrors)
 		return
 	}
 
-	FirstName, LastName, Email, err := h.store.GetUserBasicInfo(userID)
+	UserObjectID, err := primitive.ObjectIDFromHex(payload.UserID)
+	if err != nil {
+		log.Printf("Error converting UserID to ObjectID: %v", err)
+		WriteError(w, http.StatusBadRequest, "invalid UserID: "+err.Error())
+		return
+	}
+
+	FirstName, LastName, Email, err := h.store.GetUserBasicInfo(UserObjectID)
 	if err != nil {
 		log.Printf("Error getting active car registers: %v", err)
 		WriteError(w, http.StatusInternalServerError, "error getting active car registers: "+err.Error())
