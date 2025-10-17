@@ -37,7 +37,7 @@ type LoginUserPayload struct {
 }
 
 type GetUserPayload struct {
-	UserID string `json:"userID" validate:"userID,required"`
+	UserID string `json:"userID" bson:"userID" validate:"required"`
 }
 
 type AccessToken struct {
