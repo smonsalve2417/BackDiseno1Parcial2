@@ -361,7 +361,7 @@ func (s *store) GetCarsByOwner(userID primitive.ObjectID) ([]Car, error) {
 }
 
 func (s *store) GetUserBasicInfo(userID primitive.ObjectID) (string, string, string, error) {
-	collection := s.database.Collection("user")
+	collection := s.database.Collection("users")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

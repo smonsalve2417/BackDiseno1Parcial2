@@ -326,8 +326,8 @@ func (h *handler) HandleGetUser(w http.ResponseWriter, r *http.Request) {
 
 	FirstName, LastName, Email, err := h.store.GetUserBasicInfo(UserObjectID)
 	if err != nil {
-		log.Printf("Error getting active car registers: %v", err)
-		WriteError(w, http.StatusInternalServerError, "error getting active car registers: "+err.Error())
+		log.Printf("Error looking for user: %v", err)
+		WriteError(w, http.StatusInternalServerError, "error looking for user: "+err.Error())
 		return
 	}
 
