@@ -47,17 +47,19 @@ type NewCarPayload struct {
 }
 
 type NewCarEntryPayload struct {
-	Placa string `json:"placa" validate:"required"`
+	Placa           string `json:"placa" validate:"required"`
+	ParkingLocation string `json:"parkingLocation" validate:"required"`
 }
 
 type CarRegister struct {
-	ID        primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
-	Admin     User               `json:"admin" bson:"admin"`
-	Car       Car                `json:"car" bson:"car"`
-	EntryTime time.Time          `json:"entryTime" bson:"entryTime"`
-	ExitTime  time.Time          `json:"exitTime,omitempty" bson:"exitTime,omitempty"`
-	Paid      bool               `json:"paid" bson:"paid"`
-	Amount    float64            `json:"amount,omitempty" bson:"amount,omitempty"`
+	ID              primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Admin           User               `json:"admin" bson:"admin"`
+	Car             Car                `json:"car" bson:"car"`
+	EntryTime       time.Time          `json:"entryTime" bson:"entryTime"`
+	ExitTime        time.Time          `json:"exitTime" bson:"exitTime"`
+	Paid            bool               `json:"paid" bson:"paid"`
+	ParkingLocation string             `json:"parkingLocation"`
+	Amount          float64            `json:"amount" bson:"amount"`
 }
 
 type CarEntry struct {
@@ -83,7 +85,7 @@ type IsAdmin struct {
 }
 
 type PublicUser struct {
-	FirstName string             `json:"firstName" bson:"firstName"`
-	LastName  string             `json:"lastName" bson:"lastName"`
-	Email     string             `json:"email"`
+	FirstName string `json:"firstName" bson:"firstName"`
+	LastName  string `json:"lastName" bson:"lastName"`
+	Email     string `json:"email"`
 }

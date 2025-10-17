@@ -219,9 +219,10 @@ func (h *handler) HandleNewCarEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	registerID, err := h.store.CreateCarRegister(CarRegister{
-		Car:       *car,
-		EntryTime: time.Now(),
-		Admin:     *User,
+		Car:             *car,
+		EntryTime:       time.Now(),
+		Admin:           *User,
+		ParkingLocation: payload.ParkingLocation,
 	})
 	if err != nil {
 		log.Printf("Error creating car register: %v", err)
@@ -285,6 +286,13 @@ func (h *handler) HandleNewCarExit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Error creating car entry: %v", err)
 		WriteError(w, http.StatusInternalServerError, "error creando registro del carro: "+err.Error())
+		return
+	}
+
+	err = h.store.CloseCarRegister(registerID, 2)
+	if err != nil {
+		log.Printf("Error closing car register: %v", err)
+		WriteError(w, http.StatusInternalServerError, "error cerrando registro del carro: "+err.Error())
 		return
 	}
 

@@ -10,7 +10,7 @@ import (
 var (
 	httpAddr          = ":8080"
 	mongoAddr         = GetEnv("MONGO_ADDR", "mongodb://root:example@mongodb:27017/")
-	mongoDatabaseName = GetEnv("MONGO_DATABASE_NAME", "microservicios")
+	mongoDatabaseName = GetEnv("MONGO_DATABASE_NAME", "parkwise")
 	JWTSecret         = GetEnv("JWTSECRET", "askjhsbdfkuhbdsfuyhasdnasdisdfiyuhb")
 )
 
