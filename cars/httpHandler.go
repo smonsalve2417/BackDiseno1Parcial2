@@ -24,14 +24,16 @@ func NewHandler(store *store) *handler {
 func (h *handler) registerRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /auth/signup", h.HandleUserRegister)
 	mux.HandleFunc("POST /auth/login", h.HandleUserLogin)
+
 	mux.HandleFunc("POST /new/car", WithJWTAuth(h.HandleNewCar, h.store.database))
 	mux.HandleFunc("POST /new/car/entry", WithJWTAuth(h.HandleNewCarEntry, h.store.database))
 	mux.HandleFunc("POST /new/car/exit", WithJWTAuth(h.HandleNewCarExit, h.store.database))
 
 	mux.HandleFunc("POST /view/user", WithJWTAuth(h.HandleGetUser, h.store.database))
+	mux.HandleFunc("GET /view/user/isAdmin", WithJWTAuth(h.HandleIsAdmin, h.store.database))
 
 	mux.HandleFunc("GET /view/car/ActiveRegisters", WithJWTAuth(h.HandleActiveRegisters, h.store.database))
-	mux.HandleFunc("GET /view/user/isAdmin", WithJWTAuth(h.HandleIsAdmin, h.store.database))
+
 	mux.HandleFunc("GET /view/car/UserRegisters", WithJWTAuth(h.HandleUserRegisters, h.store.database))
 }
 

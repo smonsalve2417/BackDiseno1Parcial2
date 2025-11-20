@@ -1,10 +1,14 @@
 FROM golang:latest
 
 WORKDIR /app
-COPY . .
+
+COPY go.mod .
+COPY go.sum .
+COPY *.go .
+COPY cars/ .
 
 RUN go mod tidy
 RUN go build -o main .
 
-EXPOSE 8080
+EXPOSE 8081
 CMD ["./main"]

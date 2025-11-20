@@ -6,9 +6,9 @@ services:
     command:
       - "--log.level=DEBUG"
       - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.address=:81"
     ports:
-      - "80:80"
+      - "81:81"
     volumes: 
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
@@ -24,11 +24,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     networks:
       - backend-network
-  api:
-      build: ./    # tu proyecto Go
-      container_name: api
+  user:
+      build: 
+        dockerfile: Dockerfile_user
+      container_name: user
       ports:
-        - "8080:8080"   # expone tu API para que puedas llamarla desde fuera
+        - "8080:8080"   # expone tu user para que puedas llamarla desde fuera
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock
       environment:
@@ -37,11 +38,33 @@ services:
       - backend-network
       labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=PathPrefix(`/api`)"
-      - "traefik.http.services.api.loadbalancer.server.port=8080"
-      - "traefik.http.middlewares.api-stripprefix.stripprefix.prefixes=/api"
-      - "traefik.http.routers.api.middlewares=api-stripprefix"
-      - "traefik.http.routers.api.entrypoints=web"
+      - "traefik.http.routers.user.rule=PathPrefix(`/user`)"
+      - "traefik.http.services.user.loadbalancer.server.port=8080"
+      - "traefik.http.middlewares.user-stripprefix.stripprefix.prefixes=/user"
+      - "traefik.http.routers.user.middlewares=user-stripprefix"
+      - "traefik.http.routers.user.entrypoints=web"
+      depends_on:
+      - mongodb
+  
+  car:
+      build: 
+        dockerfile: Dockerfile_cars
+      container_name: car
+      ports:
+        - "8081:8081"   # expone tu car para que puedas llamarla desde fuera
+      volumes:
+        - /var/run/docker.sock:/var/run/docker.sock
+      environment:
+        - DOCKER_HOST=unix:///var/run/docker.sock
+      networks:
+      - backend-network
+      labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.car.rule=PathPrefix(`/car`)"
+      - "traefik.http.services.car.loadbalancer.server.port=8081"
+      - "traefik.http.middlewares.car-stripprefix.stripprefix.prefixes=/car"
+      - "traefik.http.routers.car.middlewares=car-stripprefix"
+      - "traefik.http.routers.car.entrypoints=web"
       depends_on:
       - mongodb
 
